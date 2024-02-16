@@ -2505,6 +2505,27 @@ using Variant = ::std::variant<T...>;
 #define GTEST_INTERNAL_HAS_VARIANT 0
 #endif
 
+#ifdef GTEST_HAS_ABSL
+#define GTEST_INTERNAL_HAS_EXPECTED 1
+// absl::StaticOr
+#else
+#if defined(__cpp_lib_expected) || (GTEST_INTERNAL_HAS_INCLUDE(<expected>) && \
+                                    GTEST_INTERNAL_CPLUSPLUS_LANG >= 202202L)
+#define GTEST_INTERNAL_HAS_EXPECTED 1
+#include <expected>
+namespace testing {
+namespace internal {
+template <typename... T>
+using Expected = ::std::expected<T...>;
+}  // namespace internal
+}  // namespace testing
+#endif // __cpp_lib_expected
+#endif // GTEST_HAS_ABSL
+
+#ifndef GTEST_INTERNAL_HAS_EXPECTED
+#define GTEST_INTERNAL_HAS_EXPECTED 0
+#endif
+
 #if (defined(__cpp_constexpr) && !defined(__cpp_inline_variables)) || \
     (defined(GTEST_INTERNAL_CPLUSPLUS_LANG) &&                        \
      GTEST_INTERNAL_CPLUSPLUS_LANG < 201703L)
