@@ -939,6 +939,23 @@ class UniversalPrinter<Variant<T...>> {
 
 #endif  // GTEST_INTERNAL_HAS_VARIANT
 
+#if GTEST_INTERNAL_HAS_EXPECTED
+template <typename T, typename U>
+class UniversalPrinter<Expected<T,U>> {
+ public:
+  static void Print(const Expected<T,U>& result, ::std::ostream* os) {
+    *os << '(';
+    if (!result.has_value()) {
+      *os << result.error();
+    } else {
+      UniversalPrint(result.value(), os);
+    }
+    *os << ')';
+  }
+ private:
+};
+#endif  // GTEST_INTERNAL_HAS_EXPECTED
+
 // UniversalPrintArray(begin, len, os) prints an array of 'len'
 // elements, starting at address 'begin'.
 template <typename T>

@@ -2515,8 +2515,8 @@ using Variant = ::std::variant<T...>;
 #include <expected>
 namespace testing {
 namespace internal {
-template <typename... T>
-using Expected = ::std::expected<T...>;
+template <typename T, typename E>
+using Expected = ::std::expected<T, E>;
 }  // namespace internal
 }  // namespace testing
 #endif // __cpp_lib_expected

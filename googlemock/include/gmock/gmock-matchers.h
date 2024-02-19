@@ -3992,6 +3992,32 @@ class VariantMatcher {
 
 }  // namespace variant_matcher
 
+namespace expected_matcher {
+template <typename T, typename E>
+class ExpectedMatcher {
+public:
+    explicit ExpectedMatcher(::testing::Matcher<const T&> expected_value) : expected_value_(expected_value) {}
+
+    
+    bool MatchAndExplain(const Expected<T, E>& actual, ::testing::MatchResultListener* listener) const override {
+        if (actual && *actual == expected_value_) {
+            return true;
+        } else {
+            *listener << "where\n" << "actual: " << actual.value_or(T()) << " (value) or " << actual.error() << " (unexpected)";
+            return false;
+        }
+    }
+
+  void DescribeTo(std::ostream* os) const {
+        *os << "is expected to be equal to " << expected_value_;
+    }
+
+private:
+   const ::testing::Matcher<const T&> expected_value_;
+};
+
+}  // namespace expected_matcher
+
 namespace any_cast_matcher {
 
 // Overloads to allow AnyCastMatcher to do proper ADL lookup.
@@ -5263,6 +5289,12 @@ PolymorphicMatcher<internal::variant_matcher::VariantMatcher<T>> VariantWith(
       internal::variant_matcher::VariantMatcher<T>(matcher));
 }
 
+
+template <typename T, typename E>
+internal::expected_matcher::ExpectedMatcher<T, E> HasValue(const T& expected_value) {
+    return internal::expected_matcher::ExpectedMatcher<T, E>(expected_value);
+}
+
 #if GTEST_HAS_EXCEPTIONS
 
 // Anything inside the `internal` namespace is internal to the implementation
@@ -5569,8 +5601,8 @@ PolymorphicMatcher<internal::ExceptionMatcherImpl<Err>> ThrowsMessage(
   template <typename arg_type>                                                 \
   bool full_name<GMOCK_INTERNAL_MATCHER_TYPE_PARAMS(args)>::gmock_Impl<        \
       arg_type>::MatchAndExplain(const arg_type& arg,                          \
-                                 ::testing::MatchResultListener*               \
-                                     result_listener GTEST_ATTRIBUTE_UNUSED_)  \
+                                  ::testing::MatchResultListener*               \
+result_listener GTEST_ATTRIBUTE_UNUSED_)  \
       const
 
 #define GMOCK_INTERNAL_MATCHER_TEMPLATE_PARAMS(args) \
